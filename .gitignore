@@ -1,0 +1,12 @@
+touch .gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.png
+*.jpg
+*.jpeg
+*.env
+.env
+venv/
+.env/
+.ipynb_checkpoints/
