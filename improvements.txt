@@ -1,0 +1,13 @@
+Improvements Summary
+
+- Switched to classification of risk_level (Low/Medium/High) end-to-end.
+- Replaced regression metrics with weighted F1, precision, recall; added confusion matrix.
+- Fixed execution order and NameError by training before visualization; guarded final summary.
+- Created feature_pipeline.py to reproduce notebook feature engineering and target derivation while avoiding leakage.
+- Added train_classifier.py to persist classifier.joblib, scaler.joblib, feature_cols.json, labels.json using chronological split and SMOTE.
+- Built flask_ml_api.py: ensures artifacts exist (trains if missing), exposes POST /predict, returns predicted_level, class probabilities, and recommendations.
+- Saved outputs: algae_classification_results.png and algae_risk_processed_dataset.csv.
+
+Next
+- Improve minority-class performance (Low/High) via thresholding, cost-sensitive training, or tailored resampling.
+- Add input validation, simple auth, and logging in the API for production use.
