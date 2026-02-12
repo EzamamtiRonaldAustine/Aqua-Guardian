@@ -1,0 +1,44 @@
+Based on the detailed algae risk prediction project found in the technical documentation, here are the key facts regarding the machine learning model:
+
+### **1. Project Overview & Objective**
+
+The project is a **Smart Fish Pond Management System** designed to predict the risk of algae blooms before they occur. Since there was no direct "algae label" in the raw IoT data, the team developed a biological risk score to act as the target variable for the ML models.
+
+### **2. Target Variable: Algae Risk Score**
+
+A continuous risk score (0–100) was derived based on real-world algae biology. The model categorizes these scores into three alert levels:
+
+* **Low (0–50):** Safe conditions.
+* **Medium (50–75):** Monitoring required (found to be the most common state in the dataset at ~81%).
+* **High (75–100):** Immediate alert level (~14% of the data).
+
+**Biological Weights used for the Risk Score:**
+
+* **30% Ammonia:** Toxic levels (above 0.1 g/ml).
+* **30% Nitrate:** Primary nutrient driver.
+* **20% Turbidity:** Physical indicator of bloom.
+* **15% Temperature:** Optimal growth is between 24–28°C.
+* **5% pH:** Slightly alkaline conditions (target ~8.2) favor blooms.
+
+### **3. Data & Feature Engineering**
+
+The system uses a dataset of **33,448 samples** collected over four months (June to October 2021). To improve accuracy, 52 unique features were engineered:
+
+* **Temporal Features:** Captures daily cycles using sine/cosine encoding of the hour and "daytime" flags.
+* **Sequential Lags:** Tracks historical changes over 1, 3, 6, and 12-hour intervals to detect build-up patterns.
+* **Rolling Statistics:** Uses 1-hour windows to calculate mean, standard deviation, and maximums to smooth out sensor noise.
+* **Domain-Driven Interactions:** Includes specific biological indicators like the **nutrient ratio** and **un-ionized ammonia** levels.
+
+### **4. Machine Learning Models**
+
+The project evaluated several ensemble classification models, with a focus on:
+
+* **Random Forest:** Used for its robustness and ability to provide "Feature Importance" rankings.
+* **Gradient Boosting:** Optimized for complex, non-linear patterns.
+* **AdaBoost:** Used to improve the accuracy of weak learners.
+
+### **5. Model Pipeline & Evaluation**
+
+* **Validation:** A **Time-Series Split (80/20)** was used to ensure the model was tested on chronological data, preventing "data leakage" from the future into the past.
+* **Preprocessing:** Features were scaled using a **StandardScaler** to ensure fair weighting across different sensor types (e.g., pH vs. Nitrate).
+* **Key Metrics:** Performance is measured using F1-score, Precision, and Recall, which are critical given the imbalance between "Medium" and "High" risk levels.
