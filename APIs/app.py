@@ -1,46 +1,39 @@
 import os
+import sys
 import json
 import numpy as np
 import pandas as pd
 from flask import Flask, request, jsonify
 from joblib import load
-from feature_pipeline import engineer
-import time
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from ML.features import engineer
+from config import MODEL_PATH, SCALER_PATH, METADATA_PATH
 app = Flask(__name__)
-MODEL_PATH = os.path.join(r'C:\Users\dell\Desktop\ML Model', 'classifier.joblib')
-SCALER_PATH = os.path.join(r'C:\Users\dell\Desktop\ML Model', 'scaler.joblib')
-FEATURES_PATH = os.path.join(r'C:\Users\dell\Desktop\ML Model', 'feature_cols.json')
-LABELS_PATH = os.path.join(r'C:\Users\dell\Desktop\ML Model', 'labels.json')
 model = None
 scaler = None
 feature_cols = []
 labels = ['Low', 'Medium', 'High']
 def artifacts_exist():
-    return all(os.path.exists(p) for p in [MODEL_PATH, SCALER_PATH, FEATURES_PATH, LABELS_PATH])
+    return all(os.path.exists(p) for p in [MODEL_PATH, SCALER_PATH, METADATA_PATH])
 def load_artifacts():
     if not artifacts_exist():
         return False
     global model, scaler, feature_cols, labels
     model = load(MODEL_PATH)
     scaler = load(SCALER_PATH)
-    with open(FEATURES_PATH, 'r') as f:
-        feature_cols = json.load(f)
-    with open(LABELS_PATH, 'r') as f:
-        labels = json.load(f)
+    with open(METADATA_PATH, 'r') as f:
+        md = json.load(f)
+    feature_cols = md.get('features', [])
+    labels = md.get('labels', ['Low','Medium','High'])
     return True
 READY = load_artifacts()
 @app.route('/health', methods=['GET'])
 def health():
-    status = {
-        'model': os.path.exists(MODEL_PATH),
-        'scaler': os.path.exists(SCALER_PATH),
-        'feature_cols': os.path.exists(FEATURES_PATH),
-        'labels': os.path.exists(LABELS_PATH)
-    }
+    status = {'model': os.path.exists(MODEL_PATH), 'scaler': os.path.exists(SCALER_PATH), 'metadata': os.path.exists(METADATA_PATH)}
     return jsonify({'status': 'ok', 'artifacts': status})
 @app.route('/status', methods=['GET'])
 def status():
-    info = {'model_path': MODEL_PATH, 'scaler_path': SCALER_PATH}
+    info = {'model_path': MODEL_PATH, 'scaler_path': SCALER_PATH, 'metadata_path': METADATA_PATH}
     if READY:
         info.update({'ready': True, 'classes': labels, 'feature_count': len(feature_cols)})
     else:
