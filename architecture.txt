@@ -1,0 +1,33 @@
+Aqua-Guardian/
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│
+├── ml/
+│   ├── features.py
+│   ├── train.py
+│   ├── evaluate.py
+│   ├── predict.py
+│
+├── models/
+│   ├── classifier_v1.joblib
+│   ├── scaler_v1.joblib
+│   └── metadata.json
+│
+├── api/
+│   ├── app.py
+│   ├── schemas.py
+│
+├── config.py
+├── requirements.txt
+└── .gitignore
+
+
+
+| Layer       | Responsibility           |
+| ----------- | ------------------------ |
+| features.py | Feature engineering only |
+| train.py    | Training only            |
+| predict.py  | Inference only           |
+| app.py      | HTTP only                |
