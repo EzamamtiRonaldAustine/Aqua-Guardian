@@ -8,5 +8,6 @@ MODEL_DIR = os.path.join(BASE_DIR, "models")
 
 MODEL_PATH = os.path.join(MODEL_DIR, "classifier_v1.joblib")
 METADATA_PATH = os.path.join(MODEL_DIR, "metadata.json")
+SCALER_PATH = os.path.join(MODEL_DIR, "scaler_v1.joblib")
 
 RANDOM_STATE = 42

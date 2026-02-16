@@ -67,3 +67,6 @@ Our system:
 ✔ Provides early warning
 ✔ Uses environmental indicators
 ✔ Is practical for IoT ponds
+
+The Honest Technical Statement, Our project is:
+A machine learning–based algae bloom risk estimation system using water quality indicators as proxy variables.

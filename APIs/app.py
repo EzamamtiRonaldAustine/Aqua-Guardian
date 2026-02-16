@@ -5,8 +5,22 @@ import numpy as np
 import pandas as pd
 from flask import Flask, request, jsonify
 from joblib import load
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from ML.features import engineer
+# Ensure project root and ML package are importable
+PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
+ML_DIR = os.path.join(PROJECT_ROOT, "ML")
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+if ML_DIR not in sys.path:
+    sys.path.append(ML_DIR)
+try:
+    from ML.features import engineer
+except ModuleNotFoundError:
+    # Fallback to direct module import if package name resolution fails
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("features", os.path.join(ML_DIR, "features.py"))
+    features = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(features)
+    engineer = features.engineer
 from config import MODEL_PATH, SCALER_PATH, METADATA_PATH
 app = Flask(__name__)
 model = None
@@ -61,7 +75,7 @@ def predict_sample():
 @app.route('/artifacts', methods=['DELETE'])
 def delete_artifacts():
     removed = []
-    for p in [MODEL_PATH, SCALER_PATH, FEATURES_PATH, LABELS_PATH]:
+    for p in [MODEL_PATH, SCALER_PATH, METADATA_PATH]:
         if os.path.exists(p):
             try:
                 os.remove(p)
@@ -82,15 +96,63 @@ def predict():
     if not READY:
         return jsonify({'error': 'artifacts missing; run /retrain or the training script'}), 503
     payload = request.get_json(force=True)
+    if not payload or 'data' not in payload:
+        return jsonify({'error': "Request JSON must include a 'data' field with a list of readings."}), 400
+
     data = payload.get('data', [])
-    df = pd.DataFrame(data)
-    df, feature_cols_built = engineer(df)
+    if not isinstance(data, list) or not data:
+        return jsonify({'error': "'data' must be a non-empty list of sensor readings."}), 400
+
+    raw_df = pd.DataFrame(data)
+
+    # Validate required raw sensor columns before feature engineering
+    required_raw_cols = {
+        "created_at",
+        "Temperature(C)",
+        "Turbidity(NTU)",
+        "PH",
+        "Ammonia(g/ml)",
+        "Nitrate(g/ml)",
+    }
+    missing_raw = sorted(required_raw_cols - set(raw_df.columns))
+    if missing_raw:
+        return jsonify(
+            {
+                'error': 'Missing required raw sensor columns.',
+                'missing_columns': missing_raw,
+            }
+        ), 400
+
+    df, _ = engineer(raw_df)
+    if df.empty:
+        return jsonify(
+            {
+                'error': 'Not enough historical data after feature engineering for a stable prediction.'
+            }
+        ), 400
+
+    # Ensure all model feature columns are present
+    missing_features = sorted(set(feature_cols) - set(df.columns))
+    if missing_features:
+        return jsonify(
+            {
+                'error': 'Engineered feature columns are missing; check training/prediction feature alignment.',
+                'missing_features': missing_features,
+            }
+        ), 500
+
     X = df[feature_cols]
     X_scaled = scaler.transform(X)
     x_last = X_scaled[-1:].copy()
     pred = model.predict(x_last)[0]
     proba = model.predict_proba(x_last)[0]
     probs = {labels[i]: float(proba[i]) for i in range(len(labels))}
-    return jsonify({'predicted_level': str(pred), 'probabilities': probs, 'recommendation': recommend(str(pred))})
+    return jsonify(
+        {
+            'predicted_level': str(pred),
+            'probabilities': probs,
+            'recommendation': recommend(str(pred)),
+        }
+    )
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
