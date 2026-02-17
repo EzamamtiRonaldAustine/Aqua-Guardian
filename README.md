@@ -151,9 +151,9 @@ Hyperparameters are automatically tuned via grid search on validation set.
 [Add your license here]
 
 ## 👥 Authors
+## 1.Kisa Emmanuel || Reg.no :S23B23/028 || Access.no: B24259
+## 2.Ezamamti Ronald Austine || Reg.no :S23B23/018 ||Access.no: B24252
+## 3.Tendo Calvin || Reg.no :S23B23/013 ||Access.no: B24247 
 
-[Add author information]
 
-## 🙏 Acknowledgments
 
-[Add any acknowledgments]

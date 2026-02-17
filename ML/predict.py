@@ -66,9 +66,12 @@ class Predictor:
         probs = {}
         if hasattr(self.model, "predict_proba"):
             proba = self.model.predict_proba(x_last)[0]
-            probs = {
-                self.labels[i]: float(proba[i]) for i in range(len(self.labels))
-            }
+            # Map probabilities using the model's actual classes (prevents mismatches
+            # when the trained model only contains 2 of the 3 expected labels).
+            model_classes = getattr(self.model, "classes_", None)
+            if model_classes is None:
+                model_classes = list(range(len(proba)))
+            probs = {str(c): float(p) for c, p in zip(model_classes, proba)}
 
         return {"predicted_level": str(pred), "probabilities": probs}
 

@@ -146,7 +146,12 @@ def predict():
     x_last = X_scaled[-1:].copy()
     pred = model.predict(x_last)[0]
     proba = model.predict_proba(x_last)[0]
-    probs = {labels[i]: float(proba[i]) for i in range(len(labels))}
+    # Map probabilities using the model's actual classes to avoid mismatch
+    # if the trained model does not contain all expected labels.
+    model_classes = getattr(model, "classes_", None)
+    if model_classes is None:
+        model_classes = list(range(len(proba)))
+    probs = {str(c): float(p) for c, p in zip(model_classes, proba)}
     return jsonify(
         {
             'predicted_level': str(pred),
