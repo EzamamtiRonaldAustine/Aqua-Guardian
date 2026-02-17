@@ -1,13 +1,41 @@
-touch .gitignore
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.png
-*.jpg
-*.jpeg
-*.env
-.env
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
-.env/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
 .ipynb_checkpoints/
-rm -r __pycache__
+*.ipynb
+
+# Model artifacts (optional - uncomment if you don't want to track models)
+# Models/*.joblib
+# Models/metadata.json
+
+# Data (keep data private)
+data/raw/*.xlsx
+data/raw/*.csv
+data/processed/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cursor
+.cursor/
